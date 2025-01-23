@@ -1,12 +1,12 @@
+package com.example.quickcalc.presentation
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import java.text.DecimalFormat
 
 class CalculatorState {
-
-
-    var expression by mutableStateOf("")
+    private var expression by mutableStateOf("")
     var display by mutableStateOf("")
 
     private val df = DecimalFormat("#.########")
