@@ -49,7 +49,7 @@ class CalculatorState {
             val result = evaluate(expression)
             display = df.format(result)
             expression = display
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             display = "Error"
             expression = ""
         }
@@ -88,7 +88,7 @@ class CalculatorState {
                 throw ArithmeticException("Invalid calculation")
             }
             result
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             throw ArithmeticException("Invalid expression")
         }
     }
