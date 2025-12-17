@@ -11,6 +11,16 @@ class CalculatorState {
 
     private val df = DecimalFormat("#.########")
 
+    // Map standard operators to display operators
+    private fun toDisplayString(expr: String): String {
+        return expr.replace('*', '×').replace('/', '÷').replace('-', '−')
+    }
+
+    // Map display operators to standard operators for evaluation
+    private fun toExpressionString(input: String): String {
+        return input.replace('×', '*').replace('÷', '/').replace('−', '-')
+    }
+
     fun onInput(input: String) {
         // Prevent multiple consecutive decimals
         if (input == "." && (expression.lastOrNull()?.isDigit() != true || lastNumberContainsDecimal())) {
@@ -23,28 +33,31 @@ class CalculatorState {
     }
 
     fun onOperation(op: String) {
-        // Ensure correct handling of minus sign
-        val sanitizedOp = if (op == "−") "-" else op
+        // Convert display operators to standard operators for internal expression
+        val standardOp = toExpressionString(op)
 
-        if (expression.isEmpty() && sanitizedOp == "-") {
-            expression += sanitizedOp
+        if (expression.isEmpty() && standardOp == "-") {
+            expression += standardOp
             updateDisplay()
             return
         }
 
-        if (sanitizedOp == "-" && isLastCharOperation() && expression.last() != '-') {
-            expression += sanitizedOp
+        if (standardOp == "-" && isLastCharOperation() && expression.last() != '-') {
+            expression += standardOp
             updateDisplay()
             return
         }
 
         if (expression.isNotEmpty() && !isLastCharOperation()) {
-            expression += sanitizedOp
+            expression += standardOp
             updateDisplay()
         }
     }
 
     fun onCalculate() {
+        if (expression.isEmpty() || isLastCharOperation()) {
+            return
+        }
         try {
             val result = evaluate(expression)
             display = df.format(result)
@@ -68,22 +81,22 @@ class CalculatorState {
     }
 
     private fun updateDisplay() {
-        display = expression
+        display = toDisplayString(expression)
     }
 
     private fun isLastCharOperation(): Boolean {
-        return expression.isNotEmpty() && expression.last() in listOf('+', '−', '×', '÷')
+        return expression.isNotEmpty() && expression.last() in listOf('+', '-', '*', '/')
     }
 
     private fun lastNumberContainsDecimal(): Boolean {
-        val lastNumber = expression.split(Regex("[-+×÷]")).last()
+        val lastNumber = expression.split(Regex("[-+*/]")).lastOrNull() ?: ""
         return "." in lastNumber
     }
 
     private fun evaluate(expression: String): Double {
-        val sanitizedExpression = expression.replace('÷', '/').replace('×', '*')
+        // Expression already uses standard operators (+, -, *, /)
         return try {
-            val result = net.objecthunter.exp4j.ExpressionBuilder(sanitizedExpression).build().evaluate()
+            val result = net.objecthunter.exp4j.ExpressionBuilder(expression).build().evaluate()
             if (result.isInfinite() || result.isNaN()) {
                 throw ArithmeticException("Invalid calculation")
             }
